@@ -78,7 +78,7 @@ int blockContainerTester()
 {
     BlockMap aBlockMap;
     aBlockMap.TryAdd<float>(2);
-    Block<float>* aFloatBlock = aBlockMap.Get<float>();
+    std::shared_ptr<Block<float>> aFloatBlock = aBlockMap.Get<float>();
     std::cout << "Address of float Block is: " << aFloatBlock << ".\n";
     std::cout << "Allocated size for float Block is: " << aFloatBlock->GetAllocatedSize() << "\n";
     std::cout << "Size of float Block is: " << aFloatBlock->GetSize() << "\n";
@@ -101,5 +101,6 @@ int blockContainerTester()
       std::cout << "Allocated size for float Block is: " << aFloatBlock->GetAllocatedSize() << "\n";
       std::cout << "Size of float Block is: " << aFloatBlock->GetSize() << "\n";
     }
+    std::cout << "Number of owners of floatBlock: " << aFloatBlock.use_count() << ".\n";
     return 0;
 }
