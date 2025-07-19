@@ -8,7 +8,6 @@
 class BlockMap
 {
 private:
-  struct empty { };
   std::unordered_map<std::type_index, std::shared_ptr<void>> m_componentMap;
 public:
 
@@ -31,13 +30,13 @@ public:
   }
 
   template<typename T>
-  Block<T>* Get()
+  std::shared_ptr<Block<T>> Get()
   {
     auto it = m_componentMap.find(std::type_index(typeid(T)));
     if (it == m_componentMap.end())
     {
       throw std::runtime_error("No element found for the given key: " + std::string(std::type_index(typeid(T)).name()) + ".\n");
     }
-    return static_cast<Block<T>*>(it->second.get());
+    return std::static_pointer_cast<Block<T>>(it->second);
   }
 };
