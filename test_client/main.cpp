@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include "Block.hpp"
+#include "BlockMap.hpp"
 
 struct positionComponent
 {
@@ -8,9 +9,18 @@ struct positionComponent
     int y;
     int z;
 };
-
+int blockTester();
+int blockContainerTester();
 
 int main()
+{
+    // blockTester();
+    blockContainerTester();
+    return 0;
+}
+
+
+int blockTester()
 {
     auto intBlock = Block<int>::CreateBlock(3);
     std::cout << "Allocated size of Block<int> is: " << intBlock.GetAllocatedSize() << std::endl;
@@ -61,6 +71,35 @@ int main()
     std::cout << "sizeof(Block<char>): " << sizeof(Block<char>) << ".\n";
     std::cout << "sizeof(Block<std::string>): " << sizeof(Block<std::string>) << ".\n";
     std::cout << "sizeof(Block<positionComponent>): " << sizeof(Block<positionComponent>) << ".\n";
+    return 0;
+}
 
+int blockContainerTester()
+{
+    BlockMap aBlockMap;
+    aBlockMap.TryAdd<float>(2);
+    Block<float>* aFloatBlock = aBlockMap.Get<float>();
+    std::cout << "Address of float Block is: " << aFloatBlock << ".\n";
+    std::cout << "Allocated size for float Block is: " << aFloatBlock->GetAllocatedSize() << "\n";
+    std::cout << "Size of float Block is: " << aFloatBlock->GetSize() << "\n";
+    float* floatIndex0 = aFloatBlock->Push(2.5);
+    std::cout << "Address of floatIndex0: " << floatIndex0 << ".\n";
+    std::cout << "Value of floatIndex0: " << *floatIndex0 << ".\n";
+    std::cout << "Allocated size for float Block is: " << aFloatBlock->GetAllocatedSize() << "\n";
+    std::cout << "Size of float Block is: " << aFloatBlock->GetSize() << "\n";
+    aFloatBlock->Delete(floatIndex0);
+    std::cout << "Address of floatIndex0: " << floatIndex0 << ".\n";
+    float* floatIndex0b = aFloatBlock->Push(5.2);
+    std::cout << "Address of floatIndex0b: " << floatIndex0b << ".\n";
+    std::cout << "Value of floatIndex0b: " << *floatIndex0b << ".\n";
+    std::cout << "Allocated size for float Block is: " << aFloatBlock->GetAllocatedSize() << "\n";
+    std::cout << "Size of float Block is: " << aFloatBlock->GetSize() << "\n";
+    std::cout << "\n";
+    for (float value = 1.1; value < 30 ; value += 1.0)
+    {
+      aFloatBlock->Push(value);
+      std::cout << "Allocated size for float Block is: " << aFloatBlock->GetAllocatedSize() << "\n";
+      std::cout << "Size of float Block is: " << aFloatBlock->GetSize() << "\n";
+    }
     return 0;
 }
