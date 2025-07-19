@@ -1,0 +1,43 @@
+#pragma once
+
+#include <typeindex>
+#include <unordered_map>
+#include <memory>
+#include "Block.hpp"
+
+class BlockMap
+{
+private:
+  struct empty { };
+  std::unordered_map<std::type_index, std::shared_ptr<void>> m_componentMap;
+public:
+
+  template<typename T>
+  bool TryAdd(int a_allocatedContainerSize = 0)
+  {
+    if (m_componentMap.find(std::type_index(typeid(T))) != m_componentMap.end())
+    {
+      return false;
+    }
+
+    auto block = std::make_shared<Block<T>>(
+      a_allocatedContainerSize == 0
+      ? Block<T>::CreateBlock()
+      : Block<T>::CreateBlock(a_allocatedContainerSize)
+    );
+
+    m_componentMap[std::type_index(typeid(T))] = block;
+    return true;
+  }
+
+  template<typename T>
+  Block<T>* Get()
+  {
+    auto it = m_componentMap.find(std::type_index(typeid(T)));
+    if (it == m_componentMap.end())
+    {
+      throw std::runtime_error("No element found for the given key: " + std::string(std::type_index(typeid(T)).name()) + ".\n");
+    }
+    return static_cast<Block<T>*>(it->second.get());
+  }
+};
