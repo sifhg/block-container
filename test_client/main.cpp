@@ -102,5 +102,8 @@ int blockContainerTester()
       std::cout << "Size of float Block is: " << aFloatBlock->GetSize() << "\n";
     }
     std::cout << "Number of owners of floatBlock: " << aFloatBlock.use_count() << ".\n";
+    std::cout << aBlockMap.Delete<float>() << "\n";
+    std::cout << "Number of owners of floatBlock: " << aFloatBlock.use_count() << ".\n";
+    aBlockMap.Get<std::string>();
     return 0;
 }
