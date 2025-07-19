@@ -1,9 +1,8 @@
-#pragma
+#pragma once
 
 #include <memory>
 #include <queue>
 #include <vector>
-
 
 template <typename T>
 class Block
@@ -29,11 +28,11 @@ public:
 		ptr = nullptr;
 		return true;
 	}
-  int GetAllocatedSize()
-  {
-    return m_maxSize;
-  }
-	int GetSize()
+	int GetAllocatedSize() const
+	{
+	  return m_maxSize;
+	}
+	int GetSize() const
 	{
 		return m_size;
 	}
@@ -58,7 +57,7 @@ public:
 	}
 
 private:
-	Block(int a_firstContainerSize)
+	explicit Block(int a_firstContainerSize)
 	{
 		m_containers.push_back(std::make_unique<T[]>(a_firstContainerSize));
 		m_containerFirstIndexes = { 0 };
@@ -79,7 +78,7 @@ private:
 		{
 			nextContainerSize = m_containerSizes.back() + m_containerSizes[m_containerSizes.size() - 2];
 		}
-		int nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
+		const int nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
 		m_containerSizes.push_back(nextContainerSize);
 		m_containerFirstIndexes.push_back(nextContainerFirstIndex);
 		m_containers.push_back(std::make_unique<T[]>(nextContainerSize));
