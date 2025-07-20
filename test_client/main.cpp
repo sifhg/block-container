@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
-#include "Block.hpp"
-#include "BlockMap.hpp"
+#include "../Block.hpp"
+#include "../BlockMap.hpp"
 
 struct positionComponent
 {
