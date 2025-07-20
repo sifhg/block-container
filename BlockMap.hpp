@@ -14,7 +14,7 @@ public:
   template<typename T>
   bool TryAdd(int a_allocatedContainerSize = 0)
   {
-    if (m_componentMap.find(std::type_index(typeid(T))) != m_componentMap.end())
+    if (m_componentMap.contains(std::type_index(typeid(T))))
     {
       return false;
     }
@@ -50,7 +50,7 @@ public:
     }
     iterator->second.reset(); // Reset the shared pointer to release the memory
     m_componentMap.erase(iterator);
-    if (m_componentMap.find(std::type_index(typeid(T))) == m_componentMap.end())
+    if (!m_componentMap.contains(std::type_index(typeid(T))))
     {
       return true;
     }
