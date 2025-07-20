@@ -70,20 +70,24 @@ private:
 
   void AddContainer()
   {
-    int nextContainerSize;
-    if (m_containers.size() == 1) {
-      nextContainerSize = m_containerSizes[0];
-    }
-    else
+    const int nextContainerSize = (m_containers.size() == 1)
+      ? m_containerSizes[0]
+      : m_containerSizes.back() + m_containerSizes[m_containerSizes.size() - 2];
+    AddContainer(nextContainerSize);
+  }
+  void AddContainer(const int &a_nextContainerSize)
+  {
+    if (a_nextContainerSize <= 0)
     {
-      nextContainerSize = m_containerSizes.back() + m_containerSizes[m_containerSizes.size() - 2];
+      throw std::invalid_argument("Cannot add a container of size 0 or less.");
     }
     int nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
-    m_containerSizes.push_back(nextContainerSize);
+    m_containerSizes.push_back(a_nextContainerSize);
     m_containerFirstIndexes.push_back(nextContainerFirstIndex);
-    m_containers.push_back(std::make_unique<T[]>(nextContainerSize));
+    m_containers.push_back(std::make_unique<T[]>(a_nextContainerSize));
     m_maxSize = m_containerFirstIndexes.back() + m_containerSizes.back();
   }
+
   int FindContainerIndexForPointer(T* a_ptr)
   {
     for (int v = m_containers.size() - 1; v >= 0; --v)
