@@ -19,13 +19,13 @@ public:
       return false;
     }
 
-    auto block = std::make_shared<Block<T>>(
+    std::shared_ptr<Block<T>> newBlock = std::make_shared<Block<T>>(
       a_allocatedContainerSize == 0
       ? Block<T>::CreateBlock()
       : Block<T>::CreateBlock(a_allocatedContainerSize)
     );
 
-    m_componentMap[std::type_index(typeid(T))] = block;
+    m_componentMap[std::type_index(typeid(T))] = newBlock;
     return true;
   }
 
