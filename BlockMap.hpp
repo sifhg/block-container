@@ -35,7 +35,7 @@ public:
     auto iterator = m_componentMap.find(std::type_index(typeid(T)));
     if (iterator == m_componentMap.end())
     {
-      throw std::runtime_error("No element found for the given key: " + std::string(std::type_index(typeid(T)).name) + ".\n");
+      throw std::runtime_error("No element found for the given key: " + std::string(std::type_index(typeid(T)).name()) + ".\n");
     }
     return std::static_pointer_cast<Block<T>>(iterator->second);
   }
