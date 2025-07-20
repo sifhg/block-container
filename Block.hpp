@@ -28,11 +28,11 @@ public:
     ptr = nullptr;
     return true;
   }
-  int GetAllocatedSize()
+  [[nodiscard]] int GetAllocatedSize() const
   {
     return m_maxSize;
   }
-  int GetSize()
+  [[nodiscard]] int GetSize() const
   {
     return m_size;
   }
