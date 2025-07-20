@@ -57,7 +57,7 @@ public:
   }
 
 private:
-  Block(int a_firstContainerSize)
+  explicit Block(int a_firstContainerSize)
   {
     m_containers.push_back(std::make_unique<T[]>(a_firstContainerSize));
     m_containerFirstIndexes = { 0 };
