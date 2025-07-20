@@ -36,7 +36,7 @@ public:
   {
     return m_size;
   }
-  T* Push(T newValue)
+  [[nodiscard]] T* Push(const T &newValue)
   {
     T* itemPtr;
     if (!m_disposed.empty())
