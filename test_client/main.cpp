@@ -1,6 +1,7 @@
 #include <iostream>
 #include "../Block.hpp"
 #include "../BlockMap.hpp"
+#include "TestKit-pp/Test.hpp"
 
 struct positionComponent
 {
@@ -13,6 +14,7 @@ int blockContainerTester();
 
 int main()
 {
+    
     // blockTester();
     blockContainerTester();
     return 0;
