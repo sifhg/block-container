@@ -1,8 +1,8 @@
 #include <iostream>
 #include "../Block.hpp"
-#include "../BlockMap.hpp"
 #include "TestKit-pp/Test.hpp"
 #include "BlockTest.hpp"
+#include <vector>
 
 struct positionComponent
 {
@@ -10,12 +10,11 @@ struct positionComponent
     int y;
     int z;
 };
-int blockTester();
-int blockContainerTester();
 
 int main()
 {
-  BlockTest::GetTest();
+  BlockTest::GetTest()->Run();
+  // std::cout << ->to_string();
     // Test blockTester("Block tester");
     // blockTester
     //   .AddFeature("CreateBlock")

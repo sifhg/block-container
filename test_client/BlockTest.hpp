@@ -1,9 +1,10 @@
 #pragma once
 
 #include "TestKit-pp/Test.hpp"
+#include <memory>
 
 class BlockTest
 {
 public:
-  static Test* GetTest();
+  static std::shared_ptr<Test> GetTest();
 };
