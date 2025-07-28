@@ -16,8 +16,12 @@ private:
   int m_size;
 
 public:
-  static Block<T> CreateBlock(int firstContainerSize = 256) {
-    return Block<T>(firstContainerSize);
+  static Block<T> CreateBlock(int a_firstContainerSize = 256) {
+    if (a_firstContainerSize < 0)
+    {
+      throw std::invalid_argument("Block::CreateBlock: Cannot create a block with a negative container size.\na_firstContainerSize: " + a_firstContainerSize);
+    }
+    return Block<T>(a_firstContainerSize);
   }
 
   bool Delete(T*& ptr)
