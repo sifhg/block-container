@@ -9,11 +9,11 @@ class Block
 {
 private:
   std::vector<std::unique_ptr<T[]>> m_containers;
-  std::vector<int> m_containerFirstIndexes;
-  std::vector<int> m_containerSizes;
+  std::vector<size_t> m_containerFirstIndexes;
+  std::vector<size_t> m_containerSizes;
   std::queue<T*> m_disposed;
-  int m_maxSize;
-  int m_size;
+  size_t m_maxSize;
+  size_t m_size;
 
 public:
   static Block<T> CreateBlock(int a_firstContainerSize = 256) {
@@ -21,7 +21,7 @@ public:
     {
       throw std::invalid_argument("Block::CreateBlock: Cannot create a block with a negative container size.\na_firstContainerSize: " + a_firstContainerSize);
     }
-    return Block<T>(a_firstContainerSize);
+    return Block<T>(static_cast<size_t>(a_firstContainerSize));
   }
 
   bool Delete(T*& ptr)
@@ -61,7 +61,7 @@ public:
   }
 
 private:
-  explicit Block(int a_firstContainerSize)
+  explicit Block(size_t a_firstContainerSize)
   {
     m_containers.push_back(std::make_unique<T[]>(a_firstContainerSize));
     m_containerFirstIndexes = { 0 };
