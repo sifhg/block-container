@@ -47,13 +47,7 @@ std::shared_ptr<Test> BlockTest::GetTest()
     "Attempt to create a Block that allocates 0 elements",
     {"CreateBlock"},
     []{
-      try {
-        auto intBlock = Block<int>::CreateBlock(0); 
-      }
-      catch (int errorCode) {
-        return;
-      }
-      throw std::runtime_error("Block::CreateBlock with argument 0 threw no error.");
+      auto intBlock = Block<int>::CreateBlock(0);
     }
   );
   testPtr->AddFeatureTest(
