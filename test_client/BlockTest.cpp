@@ -2,6 +2,7 @@
 #include "TestKit-pp/Test.hpp"
 #include "BlockTest.hpp"
 #include <memory>
+#include <iostream>
 
 std::shared_ptr<Test> BlockTest::GetTest()
 {
@@ -55,6 +56,7 @@ std::shared_ptr<Test> BlockTest::GetTest()
     {"CreateBlock"},
     []{
       try {
+        std::cout << "/nEntering try\n";
         auto intBlock = Block<int>::CreateBlock(-1); 
       } catch (int errorCode) {
         return;

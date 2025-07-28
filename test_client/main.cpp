@@ -13,20 +13,8 @@ struct positionComponent
 
 int main()
 {
-  BlockTest::GetTest()->Run();
-  // std::cout << ->to_string();
-    // Test blockTester("Block tester");
-    // blockTester
-    //   .AddFeature("CreateBlock")
-    //   .AddFeature("Push")
-    //   .AddFeature("GetAllocatedSize")
-    //   .AddFeature("GetSize")
-    //   .AddFeature("Delete");
-    
-    // Test blockMapTester("Block Map tester");
-    // blockTester();
-    // blockContainerTester();
-    return 0;
+  BlockTest::GetTest();
+      return 0;
 }
 
 
