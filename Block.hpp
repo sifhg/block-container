@@ -19,7 +19,7 @@ public:
   static Block<T> CreateBlock(int a_firstContainerSize = 256) {
     if (a_firstContainerSize < 0)
     {
-      throw std::invalid_argument("Block::CreateBlock: Cannot create a block with a negative container size.\na_firstContainerSize: " + a_firstContainerSize);
+      throw std::invalid_argument("Block::CreateBlock: Cannot create a block with a negative container size.\na_firstContainerSize: " + std::to_string(a_firstContainerSize));
     }
     return Block<T>(static_cast<size_t>(a_firstContainerSize));
   }
