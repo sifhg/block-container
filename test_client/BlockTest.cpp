@@ -104,6 +104,12 @@ std::shared_ptr<Test> BlockTest::GetTest()
     }
   );
 
+  // TODO: Test that it throws an error if you create a Block of size 0 and tries to Push.
+  // TODO: Verify that it does not throw and error if you create a Block of size 0, AddContainer, and then Push.
+  // TODO: It should not be possible to AddContainer of size 0.
+  // TODO: It should not be possible to AddContainer of a negative size.
+
+
 
   return testPtr;
 }
