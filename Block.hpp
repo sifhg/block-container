@@ -3,6 +3,8 @@
 #include <memory>
 #include <queue>
 #include <vector>
+#include <typeinfo>
+#include <string>
 
 template <typename T>
 class Block
@@ -42,6 +44,11 @@ public:
   }
   [[nodiscard]] T* Push(const T &newValue)
   {
+    if (m_maxSize == 0)
+    {
+      const std::string CONTAINER_TYPE = "Container type: " + std::string(std::typeid(T).name());
+      throw std::runtime_error("Block::Push. Cannot push to a block with zero allocation. Use AddContainer() to allocate space.\n" + CONTAINER_TYPE);
+    }
     T* itemPtr;
     if (!m_disposed.empty())
     {
@@ -85,10 +92,10 @@ private:
     {
       throw std::invalid_argument("Cannot add a container of size 0 or less.");
     }
-    int nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
-    m_containerSizes.push_back(a_nextContainerSize);
+    size_t nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
+    m_containerSizes.push_back(std::static_cast<size_t>(a_nextContainerSize));
     m_containerFirstIndexes.push_back(nextContainerFirstIndex);
-    m_containers.push_back(std::make_unique<T[]>(a_nextContainerSize));
+    m_containers.push_back(std::make_unique<T[]>(std::static_cast<size_t>(a_nextContainerSize)));
     m_maxSize = m_containerFirstIndexes.back() + m_containerSizes.back();
   }
 
