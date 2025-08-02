@@ -13,8 +13,9 @@ struct positionComponent
 
 int main()
 {
-  BlockTest::GetTest();
-      return 0;
+  BlockTest::GetTest()->Run();
+  
+  return 0;
 }
 
 
