@@ -46,7 +46,7 @@ public:
   {
     if (m_maxSize == 0)
     {
-      const std::string CONTAINER_TYPE = "Container type: " + std::string(std::typeid(T).name());
+      const std::string CONTAINER_TYPE = "Container type: " + std::string(typeid(T).name());
       throw std::runtime_error("Block::Push. Cannot push to a block with zero allocation. Use AddContainer() to allocate space.\n" + CONTAINER_TYPE);
     }
     T* itemPtr;
@@ -93,9 +93,9 @@ private:
       throw std::invalid_argument("Cannot add a container of size 0 or less.");
     }
     size_t nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
-    m_containerSizes.push_back(std::static_cast<size_t>(a_nextContainerSize));
+    m_containerSizes.push_back(static_cast<size_t>(a_nextContainerSize));
     m_containerFirstIndexes.push_back(nextContainerFirstIndex);
-    m_containers.push_back(std::make_unique<T[]>(std::static_cast<size_t>(a_nextContainerSize)));
+    m_containers.push_back(std::make_unique<T[]>(static_cast<size_t>(a_nextContainerSize)));
     m_maxSize = m_containerFirstIndexes.back() + m_containerSizes.back();
   }
 
