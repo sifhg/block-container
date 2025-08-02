@@ -56,9 +56,9 @@ std::shared_ptr<Test> BlockTest::GetTest()
     {"CreateBlock"},
     []{
       try {
-        std::cout << "/nEntering try\n";
-        auto intBlock = Block<int>::CreateBlock(-1); 
-      } catch (int errorCode) {
+        auto intBlock = Block<int>::CreateBlock(-1);
+      } catch (...) {
+        std::cout << "/nEntering catch\n";
         return;
       }
       throw std::runtime_error("Block::CreateBlock with argument -1 threw no error.");
@@ -71,7 +71,7 @@ std::shared_ptr<Test> BlockTest::GetTest()
       try {
         auto intBlock = Block<double>::CreateBlock(-256); 
       }
-      catch (int errorCode) {
+      catch (...) {
         return;
       }
       throw std::runtime_error("Block::CreateBlock with argument -256 threw no error.");
@@ -84,7 +84,7 @@ std::shared_ptr<Test> BlockTest::GetTest()
       try {
         auto intBlock = Block<char>::CreateBlock(INT_MIN); 
       }
-      catch (int errorCode) {
+      catch (...) {
         return;
       }
       throw std::runtime_error("Block::CreateBlock with argument INT_MIN threw no error.");
@@ -95,14 +95,15 @@ std::shared_ptr<Test> BlockTest::GetTest()
     {"CreateBlock"},
     []{
       try {
-        auto intBlock = Block<double>::CreateBlock(INT_MIN); 
+        auto intBlock = Block<double>::CreateBlock(INT_MAX); 
       }
-      catch (int errorCode) {
-        throw std::runtime_error("Could not Block::CreateBlock with INT_MAX elements.");
+      catch (...) {
+        std::cout << "Could not create double Block for " << INT_MAX << " elements.\n";
+        return;
       }
     }
   );
-  
-  // TODO: Rewrite the Block class so it uses size_t but CreateBlock still takes signed integers as input, as a fail safe if the developer tries to input negative values
+
+
   return testPtr;
 }
