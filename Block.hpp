@@ -18,6 +18,28 @@ private:
   size_t m_size;
 
 public:
+  void AddContainer()
+  {
+    const int nextContainerSize =
+      m_containerSizes.back() == 0
+      ? 256
+      : m_containers.size() == 1
+      ? m_containerSizes[0]
+      : m_containerSizes.back() + m_containerSizes[m_containerSizes.size() - 2];
+    AddContainer(nextContainerSize);
+  }
+  void AddContainer(const int &a_nextContainerSize)
+  {
+    if (a_nextContainerSize <= 0)
+    {
+      throw std::invalid_argument("Cannot add a container of size 0 or less.");
+    }
+    size_t nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
+    m_containerSizes.push_back(static_cast<size_t>(a_nextContainerSize));
+    m_containerFirstIndexes.push_back(nextContainerFirstIndex);
+    m_containers.push_back(std::make_unique<T[]>(static_cast<size_t>(a_nextContainerSize)));
+    m_maxSize = m_containerFirstIndexes.back() + m_containerSizes.back();
+  }
   static Block<T> CreateBlock(int a_firstContainerSize = 256) {
     if (a_firstContainerSize < 0)
     {
@@ -78,26 +100,6 @@ private:
     m_disposed = { };
   }
   Block() : Block(256) {}
-
-  void AddContainer()
-  {
-    const int nextContainerSize = (m_containers.size() == 1)
-      ? m_containerSizes[0]
-      : m_containerSizes.back() + m_containerSizes[m_containerSizes.size() - 2];
-    AddContainer(nextContainerSize);
-  }
-  void AddContainer(const int &a_nextContainerSize)
-  {
-    if (a_nextContainerSize <= 0)
-    {
-      throw std::invalid_argument("Cannot add a container of size 0 or less.");
-    }
-    size_t nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
-    m_containerSizes.push_back(static_cast<size_t>(a_nextContainerSize));
-    m_containerFirstIndexes.push_back(nextContainerFirstIndex);
-    m_containers.push_back(std::make_unique<T[]>(static_cast<size_t>(a_nextContainerSize)));
-    m_maxSize = m_containerFirstIndexes.back() + m_containerSizes.back();
-  }
 
   int FindContainerIndexForPointer(T* a_ptr)
   {
