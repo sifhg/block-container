@@ -62,7 +62,7 @@ public:
   }
   [[nodiscard]] int GetSize() const
   {
-    return m_size;
+    return m_size - m_disposed.size();
   }
   [[nodiscard]] T* Push(const T &newValue)
   {
