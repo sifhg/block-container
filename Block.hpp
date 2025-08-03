@@ -5,6 +5,7 @@
 #include <vector>
 #include <typeinfo>
 #include <string>
+#include <stdexcept>
 
 template <typename T>
 class Block
@@ -30,11 +31,10 @@ public:
   }
   void AddContainer(const int &a_nextContainerSize)
   {
-    if (a_nextContainerSize <= 0)
-    {
+    if (a_nextContainerSize <= 0) {
       throw std::invalid_argument("Cannot add a container of size 0 or less.");
     }
-    size_t nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
+    const size_t nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
     m_containerSizes.push_back(static_cast<size_t>(a_nextContainerSize));
     m_containerFirstIndexes.push_back(nextContainerFirstIndex);
     m_containers.push_back(std::make_unique<T[]>(static_cast<size_t>(a_nextContainerSize)));
