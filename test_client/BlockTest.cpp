@@ -69,7 +69,6 @@ std::shared_ptr<Test> BlockTest::GetTest()
       try {
         auto intBlock = Block<int>::CreateBlock(-1);
       } catch (...) {
-        std::cout << "/nEntering catch\n";
         return;
       }
       throw std::runtime_error("Block::CreateBlock with argument -1 threw no error.");
@@ -317,8 +316,291 @@ std::shared_ptr<Test> BlockTest::GetTest()
       }
     }
   );
+    testPtr->AddFeatureTest(
+      "Verify that CreateBlock<int>(5) with 10 pushes maintains contiguous memory for first 5 and next 5 elements",
+      {"Push", "contiguousness"},
+      []{
+        auto intBlock = Block<int>::CreateBlock(5);
+        int* ptrs[10];
 
+        // Push 10 values
+        for (int i = 0; i < 10; ++i) {
+          ptrs[i] = intBlock.Push(i-5);
+        }
 
+        // Verify first 5 are contiguous
+        for (int i = 0; i < 4; ++i) {
+          if (ptrs[i+1] != ptrs[i] + 1) {
+            throw std::runtime_error("First 5 elements are not contiguous");
+          }
+        }
+
+        // Verify next 5 are contiguous
+        for (int i = 5; i < 9; ++i) {
+          if (ptrs[i+1] != ptrs[i] + 1) {
+            throw std::runtime_error("Next 5 elements are not contiguous");
+          }
+        }
+
+        // Verify the two groups are not contiguous
+        if (ptrs[5] == ptrs[4] + 1) {
+          throw std::runtime_error("First and second groups of elements are contiguous");
+        }
+      }
+    );
+    testPtr->AddFeatureTest(
+      "Verify that CreateBlock<float>(3) with Push, Delete, and Push again maintains contiguous memory for remaining elements",
+      {"Push", "Delete", "contiguousness"},
+      []{
+        auto floatBlock = Block<float>::CreateBlock(3);
+        float* floatPtr1 = floatBlock.Push(1.1f);
+        float* floatPtr2 = floatBlock.Push(2.2f);
+        float* floatPtr3 = floatBlock.Push(3.3f);
+        float* floatPtr4;
+
+        // Verify initial contiguousness
+        if (floatPtr2 != floatPtr1 + 1 || floatPtr3 != floatPtr2 + 1) {
+          throw std::runtime_error("Initial elements are not contiguous");
+        }
+
+        // Delete the middle element
+        floatBlock.Delete(floatPtr2);
+        if (floatPtr2 != nullptr) {
+          throw std::runtime_error("Pointer is not nullptr after Delete");
+        }
+
+        // Push a new value
+        floatPtr4 = floatBlock.Push(4.4f);
+
+        // Verify contiguousness after deletion and push
+        if (floatPtr4 != floatPtr1 + 1) {
+          throw std::runtime_error("Elements are not contiguous after deletion and push");
+        }
+
+        // Verify values
+        if (*floatPtr1 != 1.1f || *floatPtr3 != 3.3f || *floatPtr4 != 4.4f) {
+          throw std::runtime_error("Values do not match expected values");
+        }
+      }
+    );
+  testPtr->AddFeatureTest(
+    "Verify contiguousness with multiple pushes and deletes using CreateBlock<char>",
+    {"Push", "Delete", "contiguousness"},
+    []{
+      auto charBlock = Block<char>::CreateBlock(3);
+      char* ptrs[10];
+
+      // Initial pushes
+      ptrs[0] = charBlock.Push('a');
+      ptrs[1] = charBlock.Push('b');
+      ptrs[2] = charBlock.Push('c');
+
+      // Verify initial contiguousness
+      if (ptrs[1] != ptrs[0] + 1 || ptrs[2] != ptrs[1] + 1) {
+        throw std::runtime_error("Initial elements are not contiguous");
+      }
+
+      // Delete middle element
+      charBlock.Delete(ptrs[1]);
+      if (ptrs[1] != nullptr) {
+        throw std::runtime_error("Pointer is not nullptr after Delete");
+      }
+
+      // Push new element
+      ptrs[3] = charBlock.Push('d');
+
+      // Verify contiguousness after deletion and push
+      if (ptrs[3] != ptrs[0] + 1) {
+        throw std::runtime_error("Elements are not contiguous after deletion and push");
+      }
+
+      // Delete first element
+      charBlock.Delete(ptrs[0]);
+      if (ptrs[0] != nullptr) {
+        throw std::runtime_error("Pointer is not nullptr after Delete");
+      }
+
+      // Push more elements
+      ptrs[4] = charBlock.Push('e');
+      ptrs[5] = charBlock.Push('f');
+      ptrs[6] = charBlock.Push('g');
+      ptrs[7] = charBlock.Push('h');
+      ptrs[8] = charBlock.Push('i');
+      ptrs[9] = charBlock.Push('j');
+
+      // Verify contiguousness after deletion and push
+      if (ptrs[3] != ptrs[4] + 1) {
+        throw std::runtime_error("Elements are not contiguous after deletion and push");
+      }
+
+      // Verify contiguousness of new elements
+      for (int i = 5; i < 7; ++i) {
+        if (ptrs[i+1] != ptrs[i] + 1) {
+          throw std::runtime_error("New elements 5-7 are not contiguous");
+        }
+      }
+          for (int i = 8; i < 9; ++i) {
+        if (ptrs[i+1] != ptrs[i] + 1) {
+          throw std::runtime_error("New elements 7-9 are not contiguous");
+        }
+      }
+
+      // Verify the two groups are not contiguous
+      if (ptrs[5] == ptrs[4] + 1) {
+        throw std::runtime_error("First and second groups of elements are contiguous");
+      }
+
+      // Verify values
+      if (*ptrs[3] != 'd' || *ptrs[4] != 'e' || *ptrs[5] != 'f' || *ptrs[9] != 'j') {
+        throw std::runtime_error("Values do not match expected values");
+      }
+    }
+  );
+
+  // START 
+  testPtr->AddFeatureTest(
+    "Verify that adding multiple containers works correctly",
+    {"AddContainer", "GetAllocatedSize"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(2);
+      intBlock.AddContainer(4);
+      intBlock.AddContainer(8);
+      intBlock.AddContainer(16);
+
+      if (intBlock.GetAllocatedSize() != 2 + 4 + 8 + 16) {
+        throw std::runtime_error("Allocated size after adding multiple containers is incorrect");
+      }
+    }
+  );
+
+  testPtr->AddFeatureTest(
+    "Verify that adding containers with specific sizes works correctly",
+    {"AddContainer", "GetAllocatedSize"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(2);
+      intBlock.AddContainer(4);
+      intBlock.AddContainer(8);
+      intBlock.AddContainer(16);
+
+      if (intBlock.GetAllocatedSize() != 2 + 4 + 8 + 16) {
+        throw std::runtime_error("Allocated size after adding containers with specific sizes is incorrect");
+      }
+    }
+  );
+
+  testPtr->AddFeatureTest(
+    "Verify that adding containers after pushes and deletes works correctly",
+    {"AddContainer", "Push", "Delete", "GetAllocatedSize"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(2);
+      int* ptr1 = intBlock.Push(42);
+      int* ptr2 = intBlock.Push(100);
+      intBlock.Delete(ptr1);
+      intBlock.AddContainer(4);
+      intBlock.AddContainer(8);
+
+      if (intBlock.GetAllocatedSize() != 2 + 4 + 8) {
+        throw std::runtime_error("Allocated size after adding containers after pushes and deletes is incorrect");
+      }
+    }
+  );
+
+  testPtr->AddFeatureTest(
+    "Verify that adding containers with sizes that are not powers of two works correctly",
+    {"AddContainer", "GetAllocatedSize"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(2);
+      intBlock.AddContainer(3);
+      intBlock.AddContainer(5);
+      intBlock.AddContainer(7);
+
+      if (intBlock.GetAllocatedSize() != 2 + 3 + 5 + 7) {
+        throw std::runtime_error("Allocated size after adding containers with sizes that are not powers of two is incorrect");
+      }
+    }
+  );
+
+  testPtr->AddFeatureTest(
+    "Verify that adding containers with sizes that are very large works correctly",
+    {"AddContainer", "GetAllocatedSize"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(2);
+      intBlock.AddContainer(1000000);
+      intBlock.AddContainer(2000000);
+
+      if (intBlock.GetAllocatedSize() != 2 + 1000000 + 2000000) {
+        throw std::runtime_error("Allocated size after adding containers with sizes that are very large is incorrect");
+      }
+    }
+  );
+
+  testPtr->AddFeatureTest(
+    "Verify that adding containers with sizes that are very small works correctly",
+    {"AddContainer", "GetAllocatedSize"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(2);
+      intBlock.AddContainer(1);
+      intBlock.AddContainer(2);
+
+      if (intBlock.GetAllocatedSize() != 2 + 1 + 2) {
+        throw std::runtime_error("Allocated size after adding containers with sizes that are very small is incorrect");
+      }
+    }
+  );
+      testPtr->AddFeatureTest(
+        "Verify contiguousness after adding containers with different sizes and multiple pushes",
+        {"CreateBlock", "AddContainer", "Push", "contiguousness"},
+        []{
+          auto intBlock = Block<int>::CreateBlock(5);
+          intBlock.AddContainer(5);
+          intBlock.AddContainer(3);
+          intBlock.AddContainer(7);
+
+          // First loop of 5 pushes
+          int* ptrs5[5];
+          for (int i = 0; i < 5; ++i) {
+            ptrs5[i] = intBlock.Push(i);
+          }
+          for (int i = 0; i < 4; ++i) {
+            if (ptrs5[i+1] != ptrs5[i] + 1) {
+              throw std::runtime_error("First 5 elements are not contiguous");
+            }
+          }
+
+          // Second loop of 5 pushes
+          int* ptrs5_2[5];
+          for (int i = 0; i < 5; ++i) {
+            ptrs5_2[i] = intBlock.Push(i + 5);
+          }
+          for (int i = 0; i < 4; ++i) {
+            if (ptrs5_2[i+1] != ptrs5_2[i] + 1) {
+              throw std::runtime_error("Next 5 elements are not contiguous");
+            }
+          }
+
+          // Third loop of 3 pushes
+          int* ptrs3[3];
+          for (int i = 0; i < 3; ++i) {
+            ptrs3[i] = intBlock.Push(i + 10);
+          }
+          for (int i = 0; i < 2; ++i) {
+            if (ptrs3[i+1] != ptrs3[i] + 1) {
+              throw std::runtime_error("Next 3 elements are not contiguous");
+            }
+          }
+
+          // Fourth loop of 7 pushes
+          int* ptrs7[7];
+          for (int i = 0; i < 7; ++i) {
+            ptrs7[i] = intBlock.Push(i + 13);
+          }
+          for (int i = 0; i < 6; ++i) {
+            if (ptrs7[i+1] != ptrs7[i] + 1) {
+              throw std::runtime_error("Next 7 elements are not contiguous");
+            }
+          }
+        }
+      );
 
   return testPtr;
 }
