@@ -101,6 +101,29 @@ private:
   }
   Block() : Block(256) {}
 
+  [[nodiscard]] int FindContainerIndexForIndex(const int a_index)
+  {
+    if (a_index >= m_size || a_index < 0) throw std::out_of_range("Index " + std::to_string(a_index) + " does not exist in Block of size " + std::to_string(size) + ".\n");
+    if (m_containerFirstIndexes.size() == 1) return 0;
+    if (a_index > m_containerFirstIndexes.back()) return m_containerFirstIndexes.size() - 1;
+    int containerIndex = m_containerFirstIndexes.size() / 2;
+    int stepSize = m_containerFirstIndexes.size() / 4;
+    stepSize = (stepSize == 0) ? 1 : stepSize;
+    while (!(a_index >= m_containerFirstIndexes[containerIndex] && a_index < m_containerFirstIndexes[containerIndex + 1]))
+    {
+      if (a_index >= m_containerFirstIndexes[containerIndex + 1])
+      {
+        containerIndex = containerIndex + stepSize;
+      }
+      else
+      {
+        containerIndex = containerIndex - stepSize;
+      }
+      stepSize /= 2;
+      stepSize = (stepSize == 0) ? 1 : stepSize;
+    }
+    return containerIndex;
+  }
   int FindContainerIndexForPointer(T* a_ptr)
   {
     for (int v = m_containers.size() - 1; v >= 0; --v)
