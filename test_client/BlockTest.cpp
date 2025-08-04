@@ -547,60 +547,60 @@ std::shared_ptr<Test> BlockTest::GetTest()
       }
     }
   );
-      testPtr->AddFeatureTest(
-        "Verify contiguousness after adding containers with different sizes and multiple pushes",
-        {"CreateBlock", "AddContainer", "Push", "contiguousness"},
-        []{
-          auto intBlock = Block<int>::CreateBlock(5);
-          intBlock.AddContainer(5);
-          intBlock.AddContainer(3);
-          intBlock.AddContainer(7);
+  testPtr->AddFeatureTest(
+    "Verify contiguousness after adding containers with different sizes and multiple pushes",
+    {"CreateBlock", "AddContainer", "Push", "contiguousness"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(5);
+      intBlock.AddContainer(5);
+      intBlock.AddContainer(3);
+      intBlock.AddContainer(7);
 
-          // First loop of 5 pushes
-          int* ptrs5[5];
-          for (int i = 0; i < 5; ++i) {
-            ptrs5[i] = intBlock.Push(i);
-          }
-          for (int i = 0; i < 4; ++i) {
-            if (ptrs5[i+1] != ptrs5[i] + 1) {
-              throw std::runtime_error("First 5 elements are not contiguous");
-            }
-          }
-
-          // Second loop of 5 pushes
-          int* ptrs5_2[5];
-          for (int i = 0; i < 5; ++i) {
-            ptrs5_2[i] = intBlock.Push(i + 5);
-          }
-          for (int i = 0; i < 4; ++i) {
-            if (ptrs5_2[i+1] != ptrs5_2[i] + 1) {
-              throw std::runtime_error("Next 5 elements are not contiguous");
-            }
-          }
-
-          // Third loop of 3 pushes
-          int* ptrs3[3];
-          for (int i = 0; i < 3; ++i) {
-            ptrs3[i] = intBlock.Push(i + 10);
-          }
-          for (int i = 0; i < 2; ++i) {
-            if (ptrs3[i+1] != ptrs3[i] + 1) {
-              throw std::runtime_error("Next 3 elements are not contiguous");
-            }
-          }
-
-          // Fourth loop of 7 pushes
-          int* ptrs7[7];
-          for (int i = 0; i < 7; ++i) {
-            ptrs7[i] = intBlock.Push(i + 13);
-          }
-          for (int i = 0; i < 6; ++i) {
-            if (ptrs7[i+1] != ptrs7[i] + 1) {
-              throw std::runtime_error("Next 7 elements are not contiguous");
-            }
-          }
+      // First loop of 5 pushes
+      int* ptrs5[5];
+      for (int i = 0; i < 5; ++i) {
+        ptrs5[i] = intBlock.Push(i);
+      }
+      for (int i = 0; i < 4; ++i) {
+        if (ptrs5[i+1] != ptrs5[i] + 1) {
+          throw std::runtime_error("First 5 elements are not contiguous");
         }
-      );
+      }
+
+      // Second loop of 5 pushes
+      int* ptrs5_2[5];
+      for (int i = 0; i < 5; ++i) {
+        ptrs5_2[i] = intBlock.Push(i + 5);
+      }
+      for (int i = 0; i < 4; ++i) {
+        if (ptrs5_2[i+1] != ptrs5_2[i] + 1) {
+          throw std::runtime_error("Next 5 elements are not contiguous");
+        }
+      }
+
+      // Third loop of 3 pushes
+      int* ptrs3[3];
+      for (int i = 0; i < 3; ++i) {
+        ptrs3[i] = intBlock.Push(i + 10);
+      }
+      for (int i = 0; i < 2; ++i) {
+        if (ptrs3[i+1] != ptrs3[i] + 1) {
+          throw std::runtime_error("Next 3 elements are not contiguous");
+        }
+      }
+
+      // Fourth loop of 7 pushes
+      int* ptrs7[7];
+      for (int i = 0; i < 7; ++i) {
+        ptrs7[i] = intBlock.Push(i + 13);
+      }
+      for (int i = 0; i < 6; ++i) {
+        if (ptrs7[i+1] != ptrs7[i] + 1) {
+          throw std::runtime_error("Next 7 elements are not contiguous");
+        }
+      }
+    }
+  );
 
   return testPtr;
 }
