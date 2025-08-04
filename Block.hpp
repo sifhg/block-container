@@ -84,6 +84,7 @@ public:
     {
       AddContainer();
     }
+    // TODO: The latest index is not neccesarily the first index with an undefined value.
     itemPtr = m_containers.back().get() + (m_size - m_containerFirstIndexes.back() - 1);
     *itemPtr = newValue;
     return itemPtr;
