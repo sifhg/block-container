@@ -84,8 +84,9 @@ public:
     {
       AddContainer();
     }
-    // TODO: The latest index is not neccesarily the first index with an undefined value.
-    itemPtr = m_containers.back().get() + (m_size - m_containerFirstIndexes.back() - 1);
+    // TODO: The latest index is not necessarily the first index with an undefined value.
+    itemPtr = FindPointerForIndex(m_size) - 1;
+    // itemPtr = m_containers.back().get() + (m_size - m_containerFirstIndexes.back() - 1);
     *itemPtr = newValue;
     return itemPtr;
   }
@@ -125,7 +126,7 @@ private:
     }
     return containerIndex;
   }
-  int FindContainerIndexForPointer(T* a_ptr)
+  [[nodiscard]] int FindContainerIndexForPointer(T* a_ptr)
   {
     for (int v = m_containers.size() - 1; v >= 0; --v)
     {
@@ -138,6 +139,11 @@ private:
       }
     }
     return -1;
+  }
+  [[nodiscard]] T* FindPointerForIndex(const size_t a_index)
+  {
+    const size_t containerIndex = FindContainerIndexForIndex(a_index);
+    return m_containers[containerIndex].get() + (a_index - m_containerFirstIndexes[containerIndex]);
   }
 };
 
