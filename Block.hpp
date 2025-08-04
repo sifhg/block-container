@@ -102,9 +102,9 @@ private:
   }
   Block() : Block(256) {}
 
-  [[nodiscard]] int FindContainerIndexForIndex(const int a_index)
+  [[nodiscard]] int FindContainerIndexForIndex(const int a_index) const
   {
-    if (a_index >= m_size || a_index < 0) throw std::out_of_range("Index " + std::to_string(a_index) + " does not exist in Block of size " + std::to_string(size) + ".\n");
+    if (a_index > m_size || a_index < 0) throw std::out_of_range("Index " + std::to_string(a_index) + " does not exist in Block of size " + std::to_string(m_size) + ".\n");
     if (m_containerFirstIndexes.size() == 1) return 0;
     if (a_index > m_containerFirstIndexes.back()) return m_containerFirstIndexes.size() - 1;
     int containerIndex = m_containerFirstIndexes.size() / 2;
