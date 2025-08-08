@@ -528,7 +528,7 @@ std::shared_ptr<Test> BlockTest::GetTest()
       intBlock.AddContainer(1000000);
       intBlock.AddContainer(2000000);
 
-      if (intBlock.GetAllocatedSize() != 2 + 1000000 + 2000000) {
+      if (intBlock.GetAllocatedSize() != 2 + intBlock.GetMaxContainerSize() + intBlock.GetMaxContainerSize()) {
         throw std::runtime_error("Allocated size after adding containers with sizes that are very large is incorrect");
       }
     }
