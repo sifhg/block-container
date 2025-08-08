@@ -107,9 +107,13 @@ public:
 private:
   explicit Block(size_t a_firstContainerSize)
   {
-    m_containers.push_back(std::make_unique<T[]>(a_firstContainerSize));
-    m_containerFirstIndexes = { 0 };
     m_maxContainerSize = 256;
+    m_containers.push_back(std::make_unique<T[]>(
+      a_firstContainerSize > m_maxContainerSize
+      ? m_maxContainerSize
+      : a_firstContainerSize
+    ));
+    m_containerFirstIndexes = { 0 };
     m_containerSizes = { a_firstContainerSize };
     m_maxSize = a_firstContainerSize;
     m_size = 0;
