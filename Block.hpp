@@ -15,6 +15,7 @@ private:
   std::vector<size_t> m_containerFirstIndexes;
   std::vector<size_t> m_containerSizes;
   std::queue<T*> m_disposed;
+  int m_maxContainerSize;
   size_t m_maxSize;
   size_t m_size;
 
@@ -109,6 +110,7 @@ private:
   {
     m_containers.push_back(std::make_unique<T[]>(a_firstContainerSize));
     m_containerFirstIndexes = { 0 };
+    m_maxContainerSize = 256;
     m_containerSizes = { a_firstContainerSize };
     m_maxSize = a_firstContainerSize;
     m_size = 0;
@@ -157,6 +159,12 @@ private:
   {
     const size_t containerIndex = FindContainerIndexForIndex(a_index);
     return m_containers[containerIndex].get() + (a_index - m_containerFirstIndexes[containerIndex]);
+  }
+  void SetMaxContainerSize(const int a_newMaxContainerSize) {
+    if (a_newMaxContainerSize <= 0) {
+      throw std::invalid_argument("Error in Block::SetMaxContainerSize: Cannot set max container size to 0 or less");
+    }
+    m_maxContainerSize = a_newMaxContainerSize;
   }
 };
 
