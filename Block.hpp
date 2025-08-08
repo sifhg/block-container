@@ -35,10 +35,19 @@ public:
     if (a_nextContainerSize <= 0) {
       throw std::invalid_argument("Cannot add a container of size 0 or less.");
     }
+
     const size_t nextContainerFirstIndex = m_containerFirstIndexes.back() + m_containerSizes.back();
-    m_containerSizes.push_back(static_cast<size_t>(a_nextContainerSize));
+    m_containerSizes.push_back(static_cast<size_t>(
+      a_nextContainerSize > m_maxContainerSize
+      ? m_maxContainerSize
+      : a_nextContainerSize
+    ));
     m_containerFirstIndexes.push_back(nextContainerFirstIndex);
-    m_containers.push_back(std::make_unique<T[]>(static_cast<size_t>(a_nextContainerSize)));
+    m_containers.push_back(std::make_unique<T[]>(static_cast<size_t>(
+      a_nextContainerSize > m_maxContainerSize
+      ? m_maxContainerSize
+      : a_nextContainerSize
+    )));
     m_maxSize = m_containerFirstIndexes.back() + m_containerSizes.back();
   }
   static Block<T> CreateBlock(const int a_firstContainerSize = 256) {
