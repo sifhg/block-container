@@ -75,6 +75,10 @@ public:
   {
     return m_maxSize;
   }
+  [[nodiscard]] size_t GetMaxContainerSize()
+  {
+    return m_maxContainerSize;
+  }
   [[nodiscard]] int GetSize() const
   {
     return m_size - m_disposed.size();
