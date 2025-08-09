@@ -15,7 +15,7 @@ std::shared_ptr<Test> BlockTest::GetTest()
     .AddFeature("contiguousness");
 
   testPtr->AddFeatureTest(
-    "Create a char block allocating 0 elements and verifie that it allocates 0 elements",
+    "Create a char block allocating 0 elements and verify that it allocates 0 elements",
     {"CreateBlock", "GetAllocatedSize"},
     []{
       auto charBlock = Block<char>::CreateBlock(0);
@@ -598,6 +598,47 @@ std::shared_ptr<Test> BlockTest::GetTest()
         if (ptrs7[i+1] != ptrs7[i] + 1) {
           throw std::runtime_error("Next 7 elements are not contiguous");
         }
+      }
+    }
+  );
+  testPtr->AddFeatureTest(
+    "Verify that Delete returns false when given a pointer that does not belong in the Block",
+    {"Delete"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(2);
+      int* ptr1 = intBlock.Push(42);
+      int* ptr2 = intBlock.Push(100);
+
+      // Create a pointer that doesn't belong to the block
+      int* invalidPtr;
+      *invalidPtr = 200;
+
+      int* ptr3 = intBlock.Push(300);
+
+      // Verify Delete returns false for invalid pointer
+      if (intBlock.Delete(invalidPtr)) {
+        throw std::runtime_error("Delete returned true for a pointer that does not belong to the Block");
+      }
+    }
+  );
+  testPtr->AddFeatureTest(
+    "Verify that Delete returns false when given a pointer that belongs to another Block",
+    {"Delete"},
+    []{
+      auto floatBlock1 = Block<float>::CreateBlock(2);
+      auto floatBlock2 = Block<float>::CreateBlock(2);
+
+      float* ptr1 = floatBlock1.Push(1.1f);
+      float* ptr2 = floatBlock2.Push(2.2f);
+
+      // Verify Delete returns false for pointer from another block
+      if (floatBlock1.Delete(ptr2)) {
+        throw std::runtime_error("Delete returned true for a pointer that belongs to another Block");
+      }
+
+      // Verify the pointer is still valid and points to the same value
+      if (*ptr2 != 2.2f) {
+        throw std::runtime_error("Pointer from another Block was modified");
       }
     }
   );
