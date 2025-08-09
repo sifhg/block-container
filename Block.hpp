@@ -84,21 +84,21 @@ public:
       const std::string CONTAINER_TYPE = "Container type: " + std::string(typeid(T).name());
       throw std::runtime_error("Block::Push. Cannot push to a block with zero allocation. Use AddContainer() to allocate space.\n" + CONTAINER_TYPE);
     }
-    T* itemPtr;
     if (!m_disposed.empty())
     {
-      itemPtr = m_disposed.front();
+      T* itemPtr = m_disposed.front();
       m_disposed.pop();
       *itemPtr = newValue;
       return itemPtr;
     }
-    m_size++;
-    if (m_size > m_maxSize)
+
+    if (m_size >= m_maxSize)
     {
       AddContainer();
     }
     // TODO: The latest index is not necessarily the first index with an undefined value.
-    itemPtr = FindPointerForIndex(m_size) - 1;
+    T* itemPtr = FindPointerForIndex(m_size);
+    m_size++;
     // itemPtr = m_containers.back().get() + (m_size - m_containerFirstIndexes.back() - 1);
     *itemPtr = newValue;
     return itemPtr;
@@ -125,7 +125,8 @@ private:
   {
     if (a_index > m_size || a_index < 0) throw std::out_of_range("Index " + std::to_string(a_index) + " does not exist in Block of size " + std::to_string(m_size) + ".\n");
     if (m_containerFirstIndexes.size() == 1) return 0;
-    if (a_index > m_containerFirstIndexes.back()) return m_containerFirstIndexes.size() - 1;
+    if (a_index >= m_containerFirstIndexes.back()) return m_containerFirstIndexes.size() - 1;
+    if (a_index == 0) return (m_containerSizes[0] == 0) ? 1 : 0;
     int containerIndex = m_containerFirstIndexes.size() / 2;
     int stepSize = m_containerFirstIndexes.size() / 4;
     stepSize = (stepSize == 0) ? 1 : stepSize;
