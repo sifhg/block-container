@@ -610,8 +610,8 @@ std::shared_ptr<Test> BlockTest::GetTest()
       int* ptr2 = intBlock.Push(100);
 
       // Create a pointer that doesn't belong to the block
-      int* invalidPtr;
-      *invalidPtr = 200;
+      int value = 200;
+      int* invalidPtr = &value;
 
       int* ptr3 = intBlock.Push(300);
 
@@ -619,6 +619,28 @@ std::shared_ptr<Test> BlockTest::GetTest()
       if (intBlock.Delete(invalidPtr)) {
         throw std::runtime_error("Delete returned true for a pointer that does not belong to the Block");
       }
+    }
+  );
+  testPtr->AddFeatureTest(
+    "Verify that Delete returns false when given a pointer that does not belong in the Block",
+    {"Delete"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(2);
+      int* ptr1 = intBlock.Push(42);
+      int* ptr2 = intBlock.Push(100);
+
+      // Create a pointer that doesn't belong to the block
+      int* invalidPtr = new int(200);
+
+      int* ptr3 = intBlock.Push(300);
+
+      // Verify Delete returns false for invalid pointer
+      if (intBlock.Delete(invalidPtr)) {
+        throw std::runtime_error("Delete returned true for a pointer that does not belong to the Block");
+      }
+
+      // Clean up the invalid pointer
+      delete invalidPtr;
     }
   );
   testPtr->AddFeatureTest(
@@ -642,6 +664,193 @@ std::shared_ptr<Test> BlockTest::GetTest()
       }
     }
   );
+  testPtr->AddFeatureTest(
+    "Verify contiguousness after deleting a middle element and pushing a new one in a Position Block",
+    {"Push", "Delete", "contiguousness"},
+    []{
+      struct Position
+      {
+        int x;
+        int y;
+      };
 
+      auto positionBlock = Block<Position>::CreateBlock(3);
+      Position* pos0 = positionBlock.Push({0, 0});
+      Position* pos1 = positionBlock.Push({1, 1});
+      Position* pos2 = positionBlock.Push({2, 2});
+
+      // Verify initial contiguousness
+      if (pos1 != pos0 + 1 || pos2 != pos1 + 1)
+      {
+        throw std::runtime_error("Initial elements are not contiguous");
+      }
+
+      // Delete the middle element
+      positionBlock.Delete(pos1);
+      if (pos1 != nullptr)
+      {
+        throw std::runtime_error("Pointer is not nullptr after Delete");
+      }
+
+      // Push a new value
+      Position* pos3 = positionBlock.Push({3, 3});
+
+      // Verify contiguousness after deletion and push
+      if (pos3 != pos0 + 1)
+      {
+        throw std::runtime_error("Elements are not contiguous after deletion and push");
+      }
+      if (pos2 != pos3 + 1)
+      {
+        throw std::runtime_error("Elements are not contiguous after deletion and push");
+      }
+
+      // Verify values
+      if (pos0->x != 0 || pos0->y != 0 ||
+          pos3->x != 3 || pos3->y != 3 ||
+          pos2->x != 2 || pos2->y != 2) {
+        throw std::runtime_error("Values do not match expected values");
+      }
+    }
+  );
+  testPtr->AddFeatureTest(
+    "Verify contiguousness after adding containers and performing multiple pushes and deletes on a string Block",
+    {"CreateBlock", "AddContainer", "Push", "Delete", "contiguousness"},
+    [] {
+      auto stringBlock = Block<std::string>::CreateBlock(0);
+      stringBlock.AddContainer(3);
+      stringBlock.AddContainer(3);
+
+      // Push initial elements to fill the block
+      std::string* string0 = stringBlock.Push("string0");
+      std::string* string1 = stringBlock.Push("string1");
+      std::string* string2 = stringBlock.Push("string2");
+      std::string* string3 = stringBlock.Push("string3");
+      std::string* string4 = stringBlock.Push("string4");
+      std::string* string5 = stringBlock.Push("string5");
+      std::string* string6 = stringBlock.Push("string6");
+
+      // Verify initial contiguousness
+      if (string1 != string0 + 1 || string2 != string1 + 1) {
+        throw std::runtime_error("First 3 elements are not contiguous");
+      }
+      if (string4 != string3 + 1 || string5 != string4 + 1) {
+        throw std::runtime_error("Next 3 elements are not contiguous");
+      }
+
+      // Delete elements
+      stringBlock.Delete(string1);
+      stringBlock.Delete(string3);
+      stringBlock.Delete(string5);
+
+      // Push new elements
+      std::string* string1b = stringBlock.Push("string1b");
+      std::string* string3b = stringBlock.Push("string3b");
+      std::string* string5b = stringBlock.Push("string5b");
+
+      // Verify contiguousness after deletion and push
+      if (string1b != string0 + 1 || string2 != string1b + 1) {
+        throw std::runtime_error("First 3 elements are not contiguous");
+      }
+      if (string4 != string3b + 1 || string5b != string4 + 1) {
+        throw std::runtime_error("Next 3 elements are not contiguous");
+      }
+
+      // Verify values
+      if (*string1b != "string1b" || *string2 != "string2" || *string3b != "string3b" ||
+          *string4 != "string4" || *string5b != "string5b" || *string6 != "string6" || *string0 != "string0") {
+        throw std::runtime_error("Values do not match expected values");
+      }
+
+      // Delete elements
+      stringBlock.Delete(string0);
+      stringBlock.Delete(string1b);
+
+      // Push new elements
+      std::string* string0b = stringBlock.Push("string0b");
+      std::string* string1c = stringBlock.Push("string1c");
+
+      // Verify contiguousness after deletion and push
+      if (string1c != string0b + 1 || string2 != string1c + 1) {
+        throw std::runtime_error("First 3 elements are not contiguous");
+      }
+    }
+  );
+  testPtr->AddFeatureTest(
+    "Verify that AddContainer(0) throws an error",
+    {"AddContainer"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(0);
+      try {
+        intBlock.AddContainer(0);
+      } catch (const std::exception& e) {
+        return;
+      }
+      throw std::runtime_error("Block::AddContainer(0) did not throw an error.");
+    }
+  );
+  testPtr->AddFeatureTest(
+    "Verify that AddContainer(-1) throws an error",
+    {"AddContainer"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(0);
+      try {
+        intBlock.AddContainer(-1);
+      } catch (const std::exception& e) {
+        return;
+      }
+      throw std::runtime_error("Block::AddContainer(-1) did not throw an error.");
+    }
+  );
+testPtr->AddFeatureTest(
+  "Verify contiguousness after multiple pushes and deletes with a very large number of elements",
+  {"CreateBlock", "AddContainer", "Push", "Delete", "contiguousness"},
+  []{
+    const int largeSize = 10000;
+    auto intBlock = Block<int>::CreateBlock(largeSize / 2);
+    intBlock.AddContainer(largeSize / 2);
+
+    // Push initial elements
+    std::vector<int*> pointers;
+    for (int i = 0; i < largeSize; ++i) {
+      pointers.push_back(intBlock.Push(i));
+    }
+
+    // Verify initial contiguousness
+    for (int i = 0; i < largeSize - 1; ++i) {
+      if (pointers[i+1] != pointers[i] + 1) {
+        throw std::runtime_error("Initial elements are not contiguous");
+      }
+    }
+
+    // Delete every other element
+    for (int i = 0; i < largeSize; i += 2) {
+      intBlock.Delete(pointers[i]);
+      if (pointers[i] != nullptr) {
+        throw std::runtime_error("Pointer is not nullptr after Delete");
+      }
+    }
+
+    // Push new elements to fill the gaps
+    for (int i = 0; i < largeSize; i += 2) {
+      pointers[i] = intBlock.Push(i + largeSize);
+    }
+
+    // Verify contiguousness after deletion and push
+    for (int i = 0; i < largeSize - 1; ++i) {
+      if (pointers[i+1] != pointers[i] + 1) {
+        throw std::runtime_error("Elements are not contiguous after deletion and push");
+      }
+    }
+
+    // Verify values
+    for (int i = 0; i < largeSize; ++i) {
+      int expectedValue = (i % 2 == 0) ? (i + largeSize) : i;
+      if (*pointers[i] != expectedValue) {
+        throw std::runtime_error("Values do not match expected values");
+      }
+    }
+  }
+  );
   return testPtr;
 }
