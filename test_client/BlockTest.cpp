@@ -715,7 +715,7 @@ std::shared_ptr<Test> BlockTest::GetTest()
   );
   testPtr->AddFeatureTest(
     "Verify contiguousness after adding containers and performing multiple pushes and deletes on a string Block",
-    {"CreateBlock", "AddContainer", "Push", "Delete", "contiguousness"},
+    {"AddContainer", "Push", "Delete", "contiguousness"},
     [] {
       auto stringBlock = Block<std::string>::CreateBlock(0);
       stringBlock.AddContainer(3);
@@ -777,6 +777,54 @@ std::shared_ptr<Test> BlockTest::GetTest()
     }
   );
   testPtr->AddFeatureTest(
+    "Verify contiguousness after deleting values in reverse order, and repulate then in the same reverse order on a double Block",
+    {"CreateBlock", "AddContainer", "Push", "Delete", "contiguousness"},
+    []{
+      auto doubleBlock = Block<double>::CreateBlock(3);
+      doubleBlock.AddContainer(3);
+
+      // Push initial elements
+      double* double0 = doubleBlock.Push(0.0);
+      double* double1 = doubleBlock.Push(1.0);
+      double* double2 = doubleBlock.Push(2.0);
+      double* double3 = doubleBlock.Push(3.0);
+      double* double4 = doubleBlock.Push(4.0);
+      double* double5 = doubleBlock.Push(5.0);
+
+      // Verify initial contiguousness
+      if (double1 != double0 + 1 || double2 != double1 + 1) {
+        throw std::runtime_error("First 3 elements are not contiguous");
+      }
+      if (double4 != double3 + 1 || double5 != double4 + 1) {
+        throw std::runtime_error("Next 3 elements are not contiguous");
+      }
+
+      // Delete elements in specified order
+      doubleBlock.Delete(double4);
+      doubleBlock.Delete(double3);
+      doubleBlock.Delete(double1);
+
+      // Push new elements
+      double* double4b = doubleBlock.Push(4.5);
+      double* double3b = doubleBlock.Push(3.5);
+      double* double1b = doubleBlock.Push(1.5);
+
+      // Verify contiguousness in specified order
+      if (double1b != double0 + 1 || double2 != double1b + 1) {
+        throw std::runtime_error("Elements double0, double1b, double2 are not contiguous");
+      }
+      if (double4b != double3b + 1 || double5 != double4b + 1) {
+        throw std::runtime_error("Elements double3b, double4b, double5 are not contiguous");
+      }
+
+      // Verify values
+      if (*double0 != 0.0 || *double1b != 1.5 || *double2 != 2.0 ||
+          *double3b != 3.5 || *double4b != 4.5 || *double5 != 5.0) {
+        throw std::runtime_error("Values do not match expected values");
+      }
+    }
+  );
+  testPtr->AddFeatureTest(
     "Verify that AddContainer(0) throws an error",
     {"AddContainer"},
     []{
@@ -802,55 +850,118 @@ std::shared_ptr<Test> BlockTest::GetTest()
       throw std::runtime_error("Block::AddContainer(-1) did not throw an error.");
     }
   );
-testPtr->AddFeatureTest(
-  "Verify contiguousness after multiple pushes and deletes with a very large number of elements",
-  {"CreateBlock", "AddContainer", "Push", "Delete", "contiguousness"},
-  []{
-    const int largeSize = 10000;
-    auto intBlock = Block<int>::CreateBlock(largeSize / 2);
-    intBlock.AddContainer(largeSize / 2);
+  testPtr->AddFeatureTest(
+    "Verify contiguousness after multiple pushes and deletes with a very large number of elements",
+    {"CreateBlock", "AddContainer", "Push", "Delete", "contiguousness"},
+    []
+    {
+      const int largeSize = 10000;
+      auto intBlock = Block<int>::CreateBlock(largeSize / 2);
+      intBlock.AddContainer(largeSize / 2);
 
-    // Push initial elements
-    std::vector<int*> pointers;
-    for (int i = 0; i < largeSize; ++i) {
-      pointers.push_back(intBlock.Push(i));
-    }
+      // Push initial elements
+      std::vector<int*> pointers;
+      for (int i = 0; i < largeSize; ++i) {
+        pointers.push_back(intBlock.Push(i));
+      }
 
-    // Verify initial contiguousness
-    for (int i = 0; i < largeSize - 1; ++i) {
-      if (pointers[i+1] != pointers[i] + 1) {
-        throw std::runtime_error("Initial elements are not contiguous");
+      // Verify initial contiguousness
+      for (int i = 0; i < intBlock.GetMaxContainerSize() - 2; ++i) {
+        if (
+        pointers[i+1] != pointers[i] + 1
+        ) {
+          throw std::runtime_error("Initial elements are not contiguous");
+        }
+      }
+
+      // Delete every other element
+      for (int i = 0; i < largeSize; i += 2) {
+        intBlock.Delete(pointers[i]);
+        if (pointers[i] != nullptr) {
+          throw std::runtime_error("Pointer is not nullptr after Delete");
+        }
+      }
+
+      // Push new elements to fill the gaps
+      for (int i = 0; i < largeSize; i += 2) {
+        pointers[i] = intBlock.Push(i + largeSize);
+      }
+
+      // Verify contiguousness after deletion and push
+      for (int i = 0; i < largeSize - 1; ++i) {
+        if (
+        pointers[i+1] != pointers[i] + 1
+        && i % intBlock.GetMaxContainerSize() != intBlock.GetMaxContainerSize() - 1
+        ) {
+          throw std::runtime_error("Elements are not contiguous after deletion and push");
+        }
+      }
+
+      // Verify values
+      for (int i = 0; i < largeSize; ++i) {
+        int expectedValue = (i % 2 == 0) ? (i + largeSize) : i;
+        if (*pointers[i] != expectedValue) {
+          throw std::runtime_error("Values do not match expected values");
+        }
       }
     }
+  );
+  testPtr->AddFeatureTest(
+    "Verify contiguousness after multiple pushes and deletes with a very large number of disposed pointers",
+    {"CreateBlock", "AddContainer", "Push", "Delete", "contiguousness"},
+    []
+    {
+      constexpr int largeSize = 10000;
+      auto intBlock = Block<int>::CreateBlock(largeSize / 2);
+      intBlock.AddContainer(largeSize / 2);
 
-    // Delete every other element
-    for (int i = 0; i < largeSize; i += 2) {
-      intBlock.Delete(pointers[i]);
-      if (pointers[i] != nullptr) {
-        throw std::runtime_error("Pointer is not nullptr after Delete");
+      // Push initial elements
+      std::vector<int*> pointers;
+      for (int i = 0; i < largeSize; ++i) {
+        pointers.push_back(intBlock.Push(i));
+      }
+
+      // Verify initial contiguousness
+      for (int i = 0; i < intBlock.GetMaxContainerSize() - 2; ++i) {
+        if (pointers[i+1] != pointers[i] + 1) {
+          throw std::runtime_error("Initial elements are not contiguous");
+        }
+      }
+
+      // Delete every other element
+      for (int i = 0; i < largeSize; i += 2) {
+        intBlock.Delete(pointers[i]);
+        if (pointers[i] != nullptr) {
+          throw std::runtime_error("Pointer is not nullptr after Delete");
+        }
+      }
+      // Verify disposed pointers are nullptr
+      for (int i = 0; i < largeSize; i += 2) {
+        if (pointers[i] != nullptr) {
+          throw std::runtime_error("Disposed pointer is not nullptr");
+        }
+      }
+
+      // Push new elements to fill the gaps
+      for (int i = 0; i < largeSize; i += 2) {
+        pointers[i] = intBlock.Push(i + largeSize);
+      }
+
+      // Verify contiguousness after deletion and push
+      for (int i = 0; i < largeSize - 1; ++i) {
+        if (pointers[i+1] != pointers[i] + 1 && i % intBlock.GetMaxContainerSize() != intBlock.GetMaxContainerSize() - 1) {
+          throw std::runtime_error("Elements are not contiguous after deletion and push");
+        }
+      }
+
+      // Verify values
+      for (int i = 0; i < largeSize; ++i) {
+        int expectedValue = (i % 2 == 0) ? (i + largeSize) : i;
+        if (*pointers[i] != expectedValue) {
+          throw std::runtime_error("Values do not match expected values");
+        }
       }
     }
-
-    // Push new elements to fill the gaps
-    for (int i = 0; i < largeSize; i += 2) {
-      pointers[i] = intBlock.Push(i + largeSize);
-    }
-
-    // Verify contiguousness after deletion and push
-    for (int i = 0; i < largeSize - 1; ++i) {
-      if (pointers[i+1] != pointers[i] + 1) {
-        throw std::runtime_error("Elements are not contiguous after deletion and push");
-      }
-    }
-
-    // Verify values
-    for (int i = 0; i < largeSize; ++i) {
-      int expectedValue = (i % 2 == 0) ? (i + largeSize) : i;
-      if (*pointers[i] != expectedValue) {
-        throw std::runtime_error("Values do not match expected values");
-      }
-    }
-  }
   );
   return testPtr;
 }
