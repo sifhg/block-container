@@ -96,7 +96,6 @@ public:
     {
       AddContainer();
     }
-    // TODO: The latest index is not necessarily the first index with an undefined value.
     T* itemPtr = FindPointerForIndex(m_size);
     m_size++;
     // itemPtr = m_containers.back().get() + (m_size - m_containerFirstIndexes.back() - 1);
@@ -108,14 +107,14 @@ private:
   explicit Block(size_t a_firstContainerSize)
   {
     m_maxContainerSize = 1024;
-    m_containers.push_back(std::make_unique<T[]>(
+    m_containerSizes = {
       a_firstContainerSize > m_maxContainerSize
       ? m_maxContainerSize
       : a_firstContainerSize
-    ));
+    };
+    m_containers.push_back(std::make_unique<T[]>(m_containerSizes.front()));
     m_containerFirstIndexes = { 0 };
-    m_containerSizes = { a_firstContainerSize };
-    m_maxSize = a_firstContainerSize;
+    m_maxSize = m_containerSizes.front();
     m_size = 0;
     m_disposed = { };
   }
@@ -127,7 +126,7 @@ private:
     if (m_containerFirstIndexes.size() == 1) return 0;
     if (a_index >= m_containerFirstIndexes.back()) return m_containerFirstIndexes.size() - 1;
     if (a_index == 0) return (m_containerSizes[0] == 0) ? 1 : 0;
-    int containerIndex = m_containerFirstIndexes.size() / 2;
+    int containerIndex = m_containerFirstIndexes.size() / 2 - 1;
     int stepSize = m_containerFirstIndexes.size() / 4;
     stepSize = (stepSize == 0) ? 1 : stepSize;
     while (!(a_index >= m_containerFirstIndexes[containerIndex] && a_index < m_containerFirstIndexes[containerIndex + 1]))
