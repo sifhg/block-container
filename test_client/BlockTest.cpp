@@ -963,5 +963,60 @@ std::shared_ptr<Test> BlockTest::GetTest()
       }
     }
   );
+  testPtr->AddFeatureTest(
+    "Verify contiguousness after adding containers with sizes that are not powers of two",
+    {"AddContainer", "Push", "contiguousness"},
+    []{
+      auto intBlock = Block<int>::CreateBlock(2);
+      intBlock.AddContainer(3);
+      intBlock.AddContainer(5);
+      intBlock.AddContainer(7);
+
+      // Push elements to fill the containers
+      int* ptrs[15];
+      for (int i = 0; i < 15; ++i) {
+        ptrs[i] = intBlock.Push(i);
+      }
+
+      // Verify contiguousness of first container (size 2)
+      for (int i = 0; i < 1; ++i) {
+        if (ptrs[i+1] != ptrs[i] + 1) {
+          throw std::runtime_error("First container elements are not contiguous");
+        }
+      }
+
+      // Verify contiguousness of second container (size 3)
+      for (int i = 2; i < 4; ++i) {
+        if (ptrs[i+1] != ptrs[i] + 1) {
+          throw std::runtime_error("Second container elements are not contiguous");
+        }
+      }
+
+      // Verify contiguousness of third container (size 5)
+      for (int i = 5; i < 9; ++i) {
+        if (ptrs[i+1] != ptrs[i] + 1) {
+          throw std::runtime_error("Third container elements are not contiguous");
+        }
+      }
+
+      // Verify contiguousness of fourth container (size 7)
+      for (int i = 10; i < 16; ++i) {
+        if (ptrs[i+1] != ptrs[i] + 1) {
+          throw std::runtime_error("Fourth container elements are not contiguous");
+        }
+      }
+
+      // Verify that containers are not contiguous with each other
+      if (ptrs[2] == ptrs[1] + 1) {
+        throw std::runtime_error("First and second containers are contiguous");
+      }
+      if (ptrs[5] == ptrs[4] + 1) {
+        throw std::runtime_error("Second and third containers are contiguous");
+      }
+      if (ptrs[10] == ptrs[9] + 1) {
+        throw std::runtime_error("Third and fourth containers are contiguous");
+      }
+    }
+  );
   return testPtr;
 }
